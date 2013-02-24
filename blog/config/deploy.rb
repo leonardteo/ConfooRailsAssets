@@ -24,16 +24,25 @@ role :db,  "your slave db-server here"
 #   end
 # end
 
-# http://stackoverflow.com/questions/9016002/speed-up-assetsprecompile-with-rails-3-1-3-2-capistrano-deployment
+# http://keighl.com/post/fast-rails-assets-precompile-capistrano
 namespace :deploy do
-  namespace :assets do
-    task :precompile, :roles => :web, :except => { :no_release => true } do
-      from = source.next_revision(current_revision)
-      if capture("cd #{latest_release} && #{source.local.log(from)} vendor/assets/ app/assets/ | wc -l").to_i > 0
-        run %Q{cd #{latest_release} && #{rake} RAILS_ENV=#{rails_env} #{asset_env} assets:precompile}
-      else
-        logger.info "Skipping asset pre-compilation because there were no asset changes"
-      end
+  task :default do
+    update
+    assets.precompile
+    restart
+    cleanup
+    # etc
+  end
+end
+ 
+namespace :assets do
+  desc "Precompile assets locally and then rsync to app servers"
+  task :precompile, :only => { :primary => true } do
+    run_locally "bundle exec rake assets:precompile;"
+    servers = find_servers :roles => [:app], :except => { :no_release => true }
+    servers.each do |server|
+      run_locally "rsync -av ./public/assets/ #{user}@#{server}:#{current_path}/public/assets/;"
     end
+    run_locally "rm -rf public/assets"
   end
 end
