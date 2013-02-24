@@ -1,13 +1,4 @@
-Blog::Application.routes.draw do
-
-  resources :posts
-
-
-  resources :users
-
-  get 'myprecious' => "myprecious#index"
-
-
+Dummy::Application.routes.draw do
   # The priority is based upon order of creation:
   # first created -> highest priority.
 
