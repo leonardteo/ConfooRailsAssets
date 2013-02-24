@@ -1,0 +1,10 @@
+# Global debug var
+window.debug = <% if Rails.env.production? %>false<% else %>true<% end %>;
+
+# Returns the controller name
+window.controller = ->
+  $("body").data "controller"
+
+# Returns the action name
+window.action = ->
+  $("body").data "action"
